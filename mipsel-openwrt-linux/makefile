@@ -18,12 +18,6 @@ CFLAGS   :=
 %.o: ../%.cpp
 	$(TOOLCHAIN_DIR)/bin/$(CXX) $(CXXFLAGS) -c $<
 
-pwm: Gpio_test.o
-	$(TOOLCHAIN_DIR)/bin/$(CXX) $(CXXFLAGS) -o pwm Gpio_test.o $(Libs)
-
-
-test: pn532.o nfc_test.o
-	$(TOOLCHAIN_DIR)/bin/$(CXX) $(CXXFLAGS) -o test pn532.o nfc_test.o $(Libs)
 
 CardReader: pn532.o snap7.o nfc.o CardReader.o
 	$(TOOLCHAIN_DIR)/bin/$(CXX) $(CXXFLAGS) -o CardReader CardReader.o pn532.o nfc.o snap7.o $(Libs)
@@ -32,7 +26,7 @@ CardReader: pn532.o snap7.o nfc.o CardReader.o
 all: CardReader
 
 clean:
-	$(RM) test pwm CardReader *.o
+	$(RM) CardReader *.o
 
 install: CardReader
 	scp CardReader root@$(IP):/root/CardReader
