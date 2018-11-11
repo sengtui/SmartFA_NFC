@@ -28,7 +28,7 @@ NFC::NFC()
     isNewCard=false;
     isCard=false;
     isCardEntering=false;
-    logLevel=ON_ERROR;
+    logLevel=ON_EVENT;
 }
 
 void NFC::beep(int mode)

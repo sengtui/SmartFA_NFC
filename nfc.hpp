@@ -9,9 +9,6 @@
 #include "gpio.hpp"
 
 
-#define ON_ERROR   0
-#define ON_EVENT   1
-#define ON_DEBUG   9
 
 class NFC {
   public:

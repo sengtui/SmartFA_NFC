@@ -7,9 +7,13 @@
 #include <mraa.hpp>
 
 
-#define ON_ERROR   0
-#define ON_EVENT   1
-#define ON_DEBUG   9
+#define ON_ERROR   1
+#define ON_EVENT   2
+#define ON_DEBUG   4
+
+#define LOG_ERROR 1
+#define LOG_EVENT 3
+#define LOG_DEBUG 7
 
 
 void printHEX(const char* topic, char* str, int len);
