@@ -276,7 +276,7 @@ int PN532::rawCommand(int txLen, int isLog)
         if((LEN+LCS)!=0){
             if(isLog & ON_ERROR) fprintf(stderr, "Paragraph LEN %d does not match to LCS %d, reset peer\n", LEN, LCS);
             dev->write(ACK, 6);
-            usleep(500000);
+            usleep(50000);
             return 0;
         }
 
