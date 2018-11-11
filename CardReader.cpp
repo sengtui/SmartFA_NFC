@@ -1,3 +1,7 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<getopt.h>
+
 #include "nfc.hpp"
 NFC* my7688;
 
@@ -10,31 +14,68 @@ void signalHandler(int signum){
     exit(signum);
 }
 
+static int opt_plc = 1;
+static struct option long_options[]=
+{
+    {"ip", required_argument, 0, 'i'},
+    {"db", required_argument, 0, 'd'},
+    {"offset", required_argument, 0, 'o'},
+    {"rack", required_argument, 0, 'r'},
+    {"slot", required_argument, 0, 's'},
+    {"debug", required_argument, 0, 'g'},
+    {"help", no_argument, 0, 'h'},
+    {"noplc", no_argument, 0, 'n'},
+    {0,0,0,0}
+};
 
 int main(int argc, char** argv)
 {
+
     int ret;
     int counts;
 
     my7688 = new NFC();
+    int option_index=0;
+    int c;
+    my7688->useSnap7=true;
+ while(1){
+    c = getopt_long(argc, argv, "i:d:o:r:s:g:h", long_options, &option_index);
+    if(c==-1) break;
+    
+    switch(c){
+        case 'i':
+            my7688->Address=optarg;
+            break;
+        case 'd':
+            my7688->DB=atoi(optarg);
+            break;
+        case 'o':
+            my7688->Offset=atoi(optarg);
+            break;
+        case 'r':
+            my7688->Rack=atoi(optarg);
+            break;
+        case 's':
+            my7688->Slot=atoi(optarg);;
+            break;
+        case 'g':
+            my7688->logLevel=atoi(optarg);
+    fprintf(stderr,"Loglevel:%d\n", my7688->logLevel);
+            break;
+        case 'n':
+            my7688->useSnap7=false;
+            break;
 
+        case 'h':
+            fprintf(stderr, "\nUsage: CardReader -[option] value\n");
+            fprintf(stderr, "-i, -ip [ip address] set IP address of PLC\n");
+            break;
+        default:
+            abort();
 
-// Proceed parameters
-    if (argc!=4 && argc!=6)
-    {
-        fprintf(stderr, "\nUsage: CardReader IP DB Offset (Rack) (Slot)\n");
-        fprintf(stderr, "Running deamon without PLC connection...\n");
-        my7688->useSnap7=false;
     }
-    else{
-        my7688->Address=argv[1];
-        my7688->DB = atoi(argv[2]);
-        my7688->Offset = atoi(argv[3]);
-        if (argc==5){
-            my7688->Rack=atoi(argv[4]);
-            my7688->Slot=atoi(argv[5]);
-        }
-    }
+ }
+    if(argc<3) my7688->useSnap7=false;
     my7688->initialize();
     signal(SIGTERM, signalHandler);
     signal(SIGINT, signalHandler);
