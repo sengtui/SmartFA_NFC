@@ -70,7 +70,7 @@ bool PN532::RFConfiguration(int isLog)
     int ret;
     char RFCFG[]={ 0xD4, 0x32, 0x05, 0x02, 0x01, 0xFF };
 
-    if(isLog && ON_EVENT) cout<<"Configure RF parameters..." <<endl;
+    if(isLog & ON_EVENT) cout<<"Configure RF parameters..." <<endl;
     ret = Query(RFCFG, 6, isLog);
     return true;
 }
@@ -82,7 +82,7 @@ bool PN532::GetFirmwareVersion(int isLog)
     int ret;
     
     char cmd[] ={ 0xD4, 0x02 };
-    if(isLog && ON_EVENT) cout<<"GetFirmwareVersion..."<<endl;
+    if(isLog & ON_EVENT) cout<<"GetFirmwareVersion..."<<endl;
     ret = Query(cmd, 2, isLog);
     info_IC = Reply[2];
     info_Ver= Reply[3];
@@ -102,7 +102,7 @@ bool PN532::GetGeneralStatus(int isLog)
     int ret;
     
     char cmd[] ={ 0xD4, 0x04 };
-    if(isLog && ON_EVENT) cout<<"GetGeneralStatus..."<<endl;
+    if(isLog & ON_EVENT) cout<<"GetGeneralStatus..."<<endl;
     ret = Query(cmd, 2, true);
     printHEX("Status", Reply, ret);
  
@@ -118,7 +118,7 @@ bool PN532::auth(int isLog)
     
     char cmd[] ={ 0xD4, 0x40, 0x01, 0x60, 0x07, 
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,0x00,0x00,0x00 };
-    if(isLog && ON_EVENT) cout<<"Authencate..."<<endl;
+    if(isLog & ON_EVENT) cout<<"Authencate..."<<endl;
     for(int i=0;i<4;i++) cmd[i+11]=UID[i];
 
     ret = Query(cmd, 15, isLog);
@@ -138,11 +138,11 @@ bool PN532::ListPassiveTarget(int isLog)
         0xD4, 0x4A, 0x01, 0x00
     };
     
-    if(isLog && ON_EVENT) cout<<"ListPassiveTarget..."<<endl;
+    if(isLog & ON_DEBUG) cout<<"ListPassiveTarget..."<<endl;
     ret = Query(cmd, 4, isLog);
     NbTg = rxStr[7];
     if((NbTg == 0) || (ret==0)) {
-        if(isLog && ON_EVENT) cout<<"No card listed"<<endl;
+        if(isLog & ON_DEBUG) cout<<"No card listed"<<endl;
         for(int i=0;i<12;i++) UID[i]=0;
         return false;
     } 
@@ -150,7 +150,7 @@ bool PN532::ListPassiveTarget(int isLog)
         lenUID = rxStr[12];
         if(lenUID<12){
             memcpy(UID, rxStr+13, lenUID);
-            printHEX("UID", UID, lenUID);
+            if(isLog & ON_EVENT) printHEX("UID", UID, lenUID);
         }
         return true;
     }
@@ -214,22 +214,22 @@ int PN532::rawCommand(int txLen, int isLog)
  
     try{
     // Send Command
-        if(isLog && ON_DEBUG) printHEX("TX", txStr, txLen);
+        if(isLog & ON_DEBUG) printHEX("TX", txStr, txLen);
         dev->write((char*)txStr, txLen);
     // Wait for PN532 to settle down, >15mS , very very important, otherwise PN532 go crazy and start to lost sync of reply...
         usleep(15000);
     // Wait for data from serial line, timeout 15ms
         if(!dev->dataAvailable(15)){
-            if(isLog && ON_ERROR) cout<<"[ACK] Reply timeout 1" << endl;
+            if(isLog & ON_ERROR) cout<<"[ACK] Reply timeout 1" << endl;
             wakeUp();
             return false;
         }
         ret = dev->read(rxStr,6);   // Read ACK 6 chars 
         if(ret<6) ret+= dev->read(rxStr+ret, 6-ret); // Buffer run out?? read the rest!
-        if(isLog && ON_DEBUG) printHEX("ACK", rxStr, ret);
+        if(isLog & ON_DEBUG) printHEX("ACK", rxStr, ret);
 
         if(!dev->dataAvailable(50)){
-            if(isLog && ON_EVENT) cout<<"[RX] Reply timeout" << endl;
+            if(isLog & ON_DEBUG) cout<<"[RX] Reply timeout" << endl;
             dev->write(ACK,6); // Ask PN532 to give up, reset all pending job, wait for next command.
             return false;
         }
@@ -252,18 +252,18 @@ int PN532::rawCommand(int txLen, int isLog)
                     CMD = i+3;
                     // Total frame length = 5 + LEN + 2
                     if(ret<(CMD+LEN+2)){
-                        if(isLog && ON_EVENT) fprintf(stderr, "Frame length %d, read %d, need to read %d more\n", CMD+LEN+2, ret, (CMD+LEN+2-ret));
+                        if(isLog & ON_EVENT) fprintf(stderr, "Frame length %d, read %d, need to read %d more\n", CMD+LEN+2, ret, (CMD+LEN+2-ret));
                         if(dev->dataAvailable(5)) ret+=dev->read(rxStr+ret, (CMD+LEN+2-ret));
                         // If still not read full length, try again..
                         if(ret<(CMD+LEN+2)){
-                            if(isLog && ON_EVENT) fprintf(stderr, "1st Cannot read full response frame: target length %d, read %d only\n", CMD+LEN+2, ret);
+                            if(isLog & ON_EVENT) fprintf(stderr, "1st Cannot read full response frame: target length %d, read %d only\n", CMD+LEN+2, ret);
                             if(dev->dataAvailable(5)) ret+=dev->read(rxStr+ret, (CMD+LEN+2-ret));
                             if(ret<(CMD+LEN+2)){
-                                if(isLog && ON_ERROR) fprintf(stderr, "2nd Cannot read full response frame: target length %d, read %d only\n", CMD+LEN+2, ret);
+                                if(isLog & ON_ERROR) fprintf(stderr, "2nd Cannot read full response frame: target length %d, read %d only\n", CMD+LEN+2, ret);
                                 dev->write(ACK,6);
                                 usleep(15000);
                                 ret+=dev->read(rxStr+ret, (CMD+LEN+2-ret));
-                                if(isLog && ON_ERROR) fprintf(stderr, "Finally: target length %d, read %d \n", CMD+LEN+2, ret);
+                                if(isLog & ON_ERROR) fprintf(stderr, "Finally: target length %d, read %d \n", CMD+LEN+2, ret);
                                 // Do nothing, just pray if the information is enough to read UID....
                             }
                         }
@@ -274,15 +274,15 @@ int PN532::rawCommand(int txLen, int isLog)
             }
         }
         if((LEN+LCS)!=0){
-            if(isLog && ON_ERROR) fprintf(stderr, "Paragraph LEN %d does not match to LCS %d, reset peer\n", LEN, LCS);
+            if(isLog & ON_ERROR) fprintf(stderr, "Paragraph LEN %d does not match to LCS %d, reset peer\n", LEN, LCS);
             dev->write(ACK, 6);
             usleep(500000);
             return 0;
         }
 
-        if(isLog && ON_DEBUG) printHEX("HEAD", rxStr, ret);
+        if(isLog & ON_DEBUG) printHEX("HEAD", rxStr, ret);
 
-        if(isLog && ON_DEBUG) cout<< "LEN: " << (int)LEN <<" LCS: "<< (int)LCS << endl;
+        if(isLog & ON_DEBUG) cout<< "LEN: " << (int)LEN <<" LCS: "<< (int)LCS << endl;
 
         if((LEN+LCS)!=0){
             cout << "[RX] Read header error" << LEN+LCS << endl;

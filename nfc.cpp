@@ -28,7 +28,7 @@ NFC::NFC()
     isNewCard=false;
     isCard=false;
     isCardEntering=false;
-    logLevel=ON_EVENT;
+    logLevel=LOG_EVENT;
 }
 
 void NFC::beep(int mode)
@@ -164,10 +164,10 @@ bool NFC::scanCard(void)
     bool ret;
     ret=reader->ListPassiveTarget(logLevel);
     if(ret){
-fprintf(stderr,"ScanCard find card\n");
+if(logLevel && ON_EVENT) fprintf(stderr,"ScanCard find card\n");
         if(!isCard){
             isCardEntering=true;
-fprintf(stderr,"ScanCard card entering\n");
+if(logLevel && ON_EVENT) fprintf(stderr,"ScanCard card entering\n");
         }
         else isCardEntering=false;
         isCard=true;
