@@ -9,7 +9,6 @@
 #include "gpio.hpp"
 
 
-
 class NFC {
   public:
     PN532* reader;

@@ -240,7 +240,7 @@ int PN532::rawCommand(int txLen, int isLog)
         ret = dev->read(rxStr,8);
         if(ret<6){
             // Read less than 6 bytes, maybe will not find LEN and TFI, try to wait 15ms and read the rest.
-            if(dev->dataAvailable(15)) ret+= dev->read(rxStr+ret, 8-ret);
+            if(dev->dataAvailable(10)) ret+= dev->read(rxStr+ret, 8-ret);
         }
         // Locate 0xFF
         for(int i=0; i<ret-3; i++){
