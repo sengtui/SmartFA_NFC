@@ -6,8 +6,8 @@ Required package: libsnap7, libmraa, libpthread
 Cross-Compile environment:
 on .bashrc, you may want to add following lines (directory name according to your SDK/Toolpath path)
 
-export STAGING_DIR=~/SDK_Path/staging_dir/target-mipsel_24kec+dsp_gcc-4.8-linaro_uClibc-0.9.33.2
-export TOOLCHAIN_DIR=~/Toolchain_Path/toolchain-mipsel_24kec+dsp_gcc-4.8-linaro_uClibc-0.9.33.2
+export STAGING_DIR=SDK_Path/staging_dir/target-mipsel_24kec+dsp_gcc-4.8-linaro_uClibc-0.9.33.2
+export TOOLCHAIN_DIR=Toolchain_Path/toolchain-mipsel_24kec+dsp_gcc-4.8-linaro_uClibc-0.9.33.2
 export CPPFLAGS=-I$STAGING_DIR/usr/include
 export LD_LIBRARY_PATH=$STAGING_DIR/usr/lib
 export PATH=$PATH:$TOOLCHAIN_DIR/bin
