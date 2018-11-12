@@ -67,9 +67,19 @@ int main(int argc, char** argv)
             break;
 
         case 'h':
-            fprintf(stderr, "\nUsage: CardReader -[option] value\n");
-            fprintf(stderr, "-i, -ip [ip address] set IP address of PLC\n");
+            fprintf(stderr, "\nUsage: CardReader -i IP_address  -d DB_number -o Offset [-r Rack -s Slot -g DebugLevel --noplc]\n");
+            fprintf(stderr,   "                  [-o|--offset] offset  [-r|--rach] rack\nOptions:");
+            fprintf(stderr, "-i, --ip ip_address    Set IP address of PLC\n");
+            fprintf(stderr, "-d, --db dbnum         Set DB number of PLC\n");
+            fprintf(stderr, "-o, --offset offset    Set Offset of DB\n");
+            fprintf(stderr, "-r, --rack number      Set Rack number of PLC\n");
+            fprintf(stderr, "-s, --slot number      Set Slot numberof PLC\n");
+            fprintf(stderr, "-g, --debug number     Set Debug Level (1: DEBUG, 3: EVENT, 7: ERROR\n");
+            fprintf(stderr, "-n, --noplc            Disable communication with PLC\n");
+            fprintf(stderr, "-h, --help             Show this message\n");
+            return 0;
             break;
+
         default:
             abort();
 
