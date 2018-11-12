@@ -20,14 +20,14 @@ CFLAGS   :=
 
 
 CardReader: pn532.o snap7.o nfc.o CardReader.o
-	$(TOOLCHAIN_DIR)/bin/$(CXX) $(CXXFLAGS) -o CardReader CardReader.o pn532.o nfc.o snap7.o $(Libs)
+	$(TOOLCHAIN_DIR)/bin/$(CXX) $(CXXFLAGS) -o snap7nfc CardReader.o pn532.o nfc.o snap7.o $(Libs)
 
 
-all: CardReader
+all: snap7nfc
 
 clean:
-	$(RM) CardReader *.o
+	$(RM) snap7nfc *.o
 
-install: CardReader
-	scp CardReader root@$(IP):/root/CardReader
+install: snap7nfc
+	scp snap7nfc root@$(IP):/root/snap7nfc
 
