@@ -3,14 +3,16 @@
 #include<getopt.h>
 
 #include "nfc.hpp"
+using namespace std;
+
 NFC* my7688;
 
 void signalHandler(int signum){
-    fprintf(stderr, "\nSignal received, preparing to stop\n");
+    cout << "\nSignal received, preparing to stop\n";
     // Delete objects
     delete my7688;
     // Bye bye, adios!
-    fprintf(stderr, "\nBye Bye, Adios!\n");
+    cout << "\nBye Bye, Adios!\n";
     exit(signum);
 }
 
@@ -67,16 +69,16 @@ int main(int argc, char** argv)
             break;
 
         case 'h':
-            fprintf(stderr, "\nUsage: CardReader -i IP_address  -d DB_number -o Offset [-r Rack -s Slot -g DebugLevel --noplc]\n");
-            fprintf(stderr,   "                  [-o|--offset] offset  [-r|--rach] rack\nOptions:");
-            fprintf(stderr, "-i, --ip ip_address    Set IP address of PLC\n");
-            fprintf(stderr, "-d, --db dbnum         Set DB number of PLC\n");
-            fprintf(stderr, "-o, --offset offset    Set Offset of DB\n");
-            fprintf(stderr, "-r, --rack number      Set Rack number of PLC\n");
-            fprintf(stderr, "-s, --slot number      Set Slot numberof PLC\n");
-            fprintf(stderr, "-g, --debug number     Set Debug Level (1: DEBUG, 3: EVENT, 7: ERROR\n");
-            fprintf(stderr, "-n, --noplc            Disable communication with PLC\n");
-            fprintf(stderr, "-h, --help             Show this message\n");
+            cout << "\nUsage: CardReader -i IP_address  -d DB_number -o Offset [-r Rack -s Slot -g DebugLevel --noplc]\n";
+            cout << "Options:" <<endl ;
+            cout << "-i, --ip ip_address    Set IP address of PLC\n";
+            cout << "-d, --db dbnum         Set DB number of PLC\n";
+            cout << "-o, --offset offset    Set Offset of DB\n";
+            cout << "-r, --rack number      Set Rack number of PLC\n";
+            cout << "-s, --slot number      Set Slot numberof PLC\n";
+            cout << "-g, --debug number     Set Debug Level (1: DEBUG, 3: EVENT, 7: ERROR\n";
+            cout << "-n, --noplc            Disable communication with PLC\n";
+            cout << "-h, --help             Show this message\n";
             return 0;
             break;
 
