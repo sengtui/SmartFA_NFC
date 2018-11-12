@@ -72,16 +72,16 @@ int main(int argc, char** argv)
                 cout << endl << "Usage: CardReader -i IP_address -d DB_number -o Offset ";
                 cout << "[-r Rack -s Slot -g DebugLevel --noplc]" << endl;
                 cout << "Options:" <<endl ;
-                cout << "   -i, --ip ip_address    Set IP address of PLC\n";
-                cout << "   -d, --db dbnum         Set DB number of PLC\n";
-                cout << "   -o, --offset offset    Set Offset of DB\n";
-                cout << "   -r, --rack number      Set Rack number of PLC\n";
-                cout << "   -s, --slot number      Set Slot numberof PLC\n";
-                cout << "   -g, --debug number     Set Debug Level (1: DEBUG, 3: EVENT, 7: ERROR\n";
-                cout << "   -n, --noplc            Disable communication with PLC\n";
-                cout << "   -h, --help             Show this message\n\n";
+                cout << "   -i, --ip <ip_address>     Set IP address of PLC\n";
+                cout << "   -d, --db <db_number>      Set DB number of PLC, default 50 if not set\n";
+                cout << "   -o, --offset <db_offset>  Set Offset of DB, default 0 if not set\n";
+                cout << "   -r, --rack <number>       Set Rack number of PLC, default 0 if not set\n";
+                cout << "   -s, --slot <number>       Set Slot numberof PLC, default 1 if not set\n";
+                cout << "   -g, --debug <number>      Set Debug Level 7: DEBUG, 3: EVENT, 1: ERROR, default:1\n";
+                cout << "   -n, --noplc               Disable communication with PLC\n";
+                cout << "   -h, --help                Show this message\n\n";
                 cout << "Running CardReader without parameters will disable connection to PLC";
-                cout << ", equivlant to --noplc\n"
+                cout << ", same as --noplc\n";
                 return 0;
                 break;
 
@@ -90,7 +90,9 @@ int main(int argc, char** argv)
 
         }
     }
-    if(argc<3) my7688->useSnap7=false;
+    // If there is no IP Address, do not connect to PLC
+    cout << "No IP Address set, disable communication with PLC\n";
+    if(my7688->Address==NULL) my7688->useSnap7=false;
     my7688->initialize();
     signal(SIGTERM, signalHandler);
     signal(SIGINT, signalHandler);

@@ -32,6 +32,7 @@ class PN532 {
       bool GetGeneralStatus(int isLog);
       bool ListPassiveTarget(int isLog);
       int Query(char* cmd, int txLen, int isLog);
+ 
       
     
       ~PN532();

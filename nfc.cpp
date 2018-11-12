@@ -1,5 +1,6 @@
 #include "nfc.hpp"
 
+using namespace std;
 
 
 NFC::NFC()
@@ -92,11 +93,20 @@ void NFC::initialize(void)
     reader->connect("/dev/ttyS1");
     //Init Snap7 connection
     if(useSnap7){
+        if(logLevel & ON_DEBUG){
+            cout << "Snap7Client connecting, IP:" << Address << "Rack:" << Rack << "Slot:"<< Slot <<endl;
+        }
         ret = Snap7Client->ConnectTo(Address, Rack, Slot);
         if(!ret){
             fprintf(stderr, "[Snap7Client] Connect error %s\n", CliErrorText(ret).c_str());
             fprintf(stderr, "[Snap7Client] Running without PLC connection...\n");
             useSnap7=false;
+        } else{
+            if(logLevel & ON_EVENT){
+                cout << "[Snap7Cleint] Connecting successful, Exec time:" << Snap7Client->ExecTime() << endl;
+                cout << "     PDU Requestd: " << Snap7Client->PDURequested() <<endl;
+                cout << "     PDU Negotiated: " << Snap7Client->PDULength() <<endl;
+            }
         }
     }
 
@@ -175,10 +185,12 @@ if(logLevel && ON_EVENT) fprintf(stderr,"ScanCard card entering\n");
         isValidCard = checkCard(20);
         // If it's the first time checking this card and find no record, try to sync with PLC again
         if(!isValidCard && isCardEntering){
+            if(logLevel & ON_DEBUG) cout << "[Snap7Client] Card ID not found in DB, download DB again...\n";
             if(useSnap7) Snap7Client->DBRead(DB, Offset+4, 80, (void*)id_table);
         }
         if(useSnap7){
             watchdog++;
+            if(logLevel & ON_DEBUG) cout << "[Snap7Client] Valid Card found in DB, update uid to DB...\n";
             if(Snap7Client->DBWrite(DB, Offset, 4, (void*)uid)==0) watchdog=0;
             else fprintf(stderr, "[Snap7] DB Write UID error\n");
         }
@@ -196,6 +208,7 @@ bool NFC::writePLC()
 {
     if(useSnap7){
         watchdog++;
+        if(logLevel & ON_DEBUG) cout << "[Snap7Client] ListPassiveTarget() found a card, update DB...\n";
         if(Snap7Client->DBWrite(DB, Offset, 4, (void*)uid)==0) watchdog=0;
         else fprintf(stderr, "[Snap7] DB Write UID error\n");
     }

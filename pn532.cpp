@@ -21,6 +21,7 @@ void printHEX(const char* topic, unsigned char* str, int len)
 
 // Constructor
 PN532::PN532(){
+    
     bzero(rxStr,256);
     bzero(txStr,256);
 }
@@ -37,6 +38,8 @@ bool PN532::connect(const char* ttyS){
 
 // Destructor
 PN532::~PN532(){
+ 
+    char ACK[] = { 0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00 };
     dev->write(ACK,6);
     usleep(5000);
     delete dev;
@@ -210,10 +213,10 @@ int PN532::rawCommand(int txLen, int isLog)
     int ret, remain;
     char LEN, LCS; 
     int CMD;
-    
     char NACK[] = { 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00 };
     char ACK[] = { 0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00 };
- 
+   
+    
     try{
     // Send Command
         if(isLog & ON_DEBUG) printHEX("TX", txStr, txLen);
