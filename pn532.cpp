@@ -146,6 +146,10 @@ bool PN532::ListPassiveTarget(int isLog)
     if(isLog & ON_DEBUG) cout<<"ListPassiveTarget..."<<endl;
     ret = Query(cmd, 4, isLog);
     NbTg = rxStr[7];
+    if(!ret){
+        if(isLog & ON_DEBUG) cout << "[ListPassiveTarget] Fail.\n";
+        return false;
+    }
     if((NbTg == 0) || (ret==0)) {
         if(isLog & ON_DEBUG) cout<<"No card listed"<<endl;
         for(int i=0;i<12;i++) UID[i]=0;

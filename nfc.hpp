@@ -38,6 +38,7 @@ class NFC {
   
    private:
     int counts;
+    int failCounts;
     char* uid;
     char saved_uid[6];
     char id_table[80];
