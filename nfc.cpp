@@ -203,9 +203,14 @@ bool NFC::writePLC()
 
 NFC::~NFC()
 {
-    Blue->write(0.2);
+    Blue->write(0);
+    Blue->enable(false);
     Red->write(0);
+    Red->enable(false);
     Green->write(0);
+    Green->enable(false);
+    Buzzer->write(0);
+    Relay->write(0);
     if(useSnap7) Snap7Client->Disconnect();
     delete Snap7Client;
     delete reader;

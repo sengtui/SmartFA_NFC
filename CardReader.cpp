@@ -40,53 +40,56 @@ int main(int argc, char** argv)
     int option_index=0;
     int c;
     my7688->useSnap7=true;
- while(1){
-    c = getopt_long(argc, argv, "i:d:o:r:s:g:h", long_options, &option_index);
-    if(c==-1) break;
-    
-    switch(c){
-        case 'i':
-            my7688->Address=optarg;
-            break;
-        case 'd':
-            my7688->DB=atoi(optarg);
-            break;
-        case 'o':
-            my7688->Offset=atoi(optarg);
-            break;
-        case 'r':
-            my7688->Rack=atoi(optarg);
-            break;
-        case 's':
-            my7688->Slot=atoi(optarg);;
-            break;
-        case 'g':
-            my7688->logLevel=atoi(optarg);
-    fprintf(stderr,"Loglevel:%d\n", my7688->logLevel);
-            break;
-        case 'n':
-            my7688->useSnap7=false;
-            break;
+    while(1){
+        c = getopt_long(argc, argv, "i:d:o:r:s:g:h", long_options, &option_index);
+        if(c==-1) break;
+        
+        switch(c){
+            case 'i':
+                my7688->Address=optarg;
+                break;
+            case 'd':
+                my7688->DB=atoi(optarg);
+                break;
+            case 'o':
+                my7688->Offset=atoi(optarg);
+                break;
+            case 'r':
+                my7688->Rack=atoi(optarg);
+                break;
+            case 's':
+                my7688->Slot=atoi(optarg);;
+                break;
+            case 'g':
+                my7688->logLevel=atoi(optarg);
+        fprintf(stderr,"Loglevel:%d\n", my7688->logLevel);
+                break;
+            case 'n':
+                my7688->useSnap7=false;
+                break;
 
-        case 'h':
-            cout << "\nUsage: CardReader -i IP_address  -d DB_number -o Offset [-r Rack -s Slot -g DebugLevel --noplc]\n";
-            cout << "Options:" <<endl ;
-            cout << "-i, --ip ip_address    Set IP address of PLC\n";
-            cout << "-d, --db dbnum         Set DB number of PLC\n";
-            cout << "-o, --offset offset    Set Offset of DB\n";
-            cout << "-r, --rack number      Set Rack number of PLC\n";
-            cout << "-s, --slot number      Set Slot numberof PLC\n";
-            cout << "-g, --debug number     Set Debug Level (1: DEBUG, 3: EVENT, 7: ERROR\n";
-            cout << "-n, --noplc            Disable communication with PLC\n";
-            cout << "-h, --help             Show this message\n";
-            return 0;
-            break;
+            case 'h':
+                cout << endl << "Usage: CardReader -i IP_address -d DB_number -o Offset ";
+                cout << "[-r Rack -s Slot -g DebugLevel --noplc]" << endl;
+                cout << "Options:" <<endl ;
+                cout << "   -i, --ip ip_address    Set IP address of PLC\n";
+                cout << "   -d, --db dbnum         Set DB number of PLC\n";
+                cout << "   -o, --offset offset    Set Offset of DB\n";
+                cout << "   -r, --rack number      Set Rack number of PLC\n";
+                cout << "   -s, --slot number      Set Slot numberof PLC\n";
+                cout << "   -g, --debug number     Set Debug Level (1: DEBUG, 3: EVENT, 7: ERROR\n";
+                cout << "   -n, --noplc            Disable communication with PLC\n";
+                cout << "   -h, --help             Show this message\n\n";
+                cout << "Running CardReader without parameters will disable connection to PLC";
+                cout << ", equivlant to --noplc\n"
+                return 0;
+                break;
 
-        default:
-            abort();
+            default:
+                abort();
 
+        }
     }
- }
     if(argc<3) my7688->useSnap7=false;
     my7688->initialize();
     signal(SIGTERM, signalHandler);

@@ -37,6 +37,8 @@ bool PN532::connect(const char* ttyS){
 
 // Destructor
 PN532::~PN532(){
+    dev->write(ACK,6);
+    usleep(5000);
     delete dev;
 }
 
@@ -64,7 +66,7 @@ bool PN532::wakeUp()
 
 // Setup RF parameters
 // D4 32 05 02 01 40(RF_Retry)
-// RF_Retry: 0xFF infinite, 0x00 No retry. Suggest > 0x20
+// RF_Retry: 0xFF infinite, 0x00 No retry. Suggest > 0xFF, which means continueous retry until timeout
 bool PN532::RFConfiguration(int isLog)
 {
     int ret;
