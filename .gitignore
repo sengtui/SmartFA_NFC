@@ -1,3 +1,2 @@
-mipsel-openwrt-linux/CardReader.o
+mipsel-openwrt-linux/CardReader
 mipsel-openwrt-linux/pn532.o
-mipsel-openwrt-linux/nfc.o
