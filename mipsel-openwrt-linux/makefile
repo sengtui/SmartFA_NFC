@@ -15,6 +15,7 @@ CXXFLAGS :=-O3
 CFLAGS   :=
 .PHONY: all clean
 
+
 %.o: ../%.cpp
 	$(TOOLCHAIN_DIR)/bin/$(CXX) $(CXXFLAGS) -c $<
 
