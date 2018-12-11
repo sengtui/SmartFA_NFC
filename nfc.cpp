@@ -1,5 +1,6 @@
 #include "nfc.hpp"
 
+using namespace std;
 
 
 NFC::NFC()
@@ -29,6 +30,7 @@ NFC::NFC()
     isCard=false;
     isCardEntering=false;
     logLevel=LOG_EVENT;
+    failCounts=0;
 }
 
 void NFC::beep(int mode)
@@ -92,11 +94,20 @@ void NFC::initialize(void)
     reader->connect("/dev/ttyS1");
     //Init Snap7 connection
     if(useSnap7){
+        if(logLevel & ON_DEBUG){
+            cout << "Snap7Client connecting, IP:" << Address << "Rack:" << Rack << "Slot:"<< Slot <<endl;
+        }
         ret = Snap7Client->ConnectTo(Address, Rack, Slot);
         if(!ret){
             fprintf(stderr, "[Snap7Client] Connect error %s\n", CliErrorText(ret).c_str());
             fprintf(stderr, "[Snap7Client] Running without PLC connection...\n");
             useSnap7=false;
+        } else{
+            if(logLevel & ON_EVENT){
+                cout << "[Snap7Cleint] Connecting successful, Exec time:" << Snap7Client->ExecTime() << endl;
+                cout << "     PDU Requestd: " << Snap7Client->PDURequested() <<endl;
+                cout << "     PDU Negotiated: " << Snap7Client->PDULength() <<endl;
+            }
         }
     }
 
@@ -162,12 +173,14 @@ bool NFC::checkCard(int numRecords)
 bool NFC::scanCard(void)
 {
     bool ret;
+
     ret=reader->ListPassiveTarget(logLevel);
     if(ret){
-if(logLevel && ON_EVENT) fprintf(stderr,"ScanCard find card\n");
+        failCounts=0;
+        if(logLevel && ON_EVENT) fprintf(stderr,"[ScanCard] There is a card within range\n");
         if(!isCard){
             isCardEntering=true;
-if(logLevel && ON_EVENT) fprintf(stderr,"ScanCard card entering\n");
+            if(logLevel && ON_EVENT) fprintf(stderr,"[ScanCard] First entering this card\n");
         }
         else isCardEntering=false;
         isCard=true;
@@ -175,16 +188,22 @@ if(logLevel && ON_EVENT) fprintf(stderr,"ScanCard card entering\n");
         isValidCard = checkCard(20);
         // If it's the first time checking this card and find no record, try to sync with PLC again
         if(!isValidCard && isCardEntering){
+            if(logLevel & ON_DEBUG) cout << "[Snap7Client] Card ID not found in DB, download DB again...\n";
             if(useSnap7) Snap7Client->DBRead(DB, Offset+4, 80, (void*)id_table);
         }
         if(useSnap7){
             watchdog++;
+            if(logLevel & ON_DEBUG) cout << "[Snap7Client] Valid Card found in DB, update uid to DB...\n";
             if(Snap7Client->DBWrite(DB, Offset, 4, (void*)uid)==0) watchdog=0;
             else fprintf(stderr, "[Snap7] DB Write UID error\n");
         }
     } else {
-        isCard=false;
-        isCardEntering=false;
+        failCounts++;
+        if(failCounts>2) {
+            if(isCard) cout<<"[ScanCard] Card leaving.\n";
+            isCard=false;
+            isCardEntering=false;
+        }
     }
     if(isCard) writePLC();
 
@@ -196,16 +215,22 @@ bool NFC::writePLC()
 {
     if(useSnap7){
         watchdog++;
+        if(logLevel & ON_DEBUG) cout << "[writePLC] update DB...\n";
         if(Snap7Client->DBWrite(DB, Offset, 4, (void*)uid)==0) watchdog=0;
-        else fprintf(stderr, "[Snap7] DB Write UID error\n");
+        else cout << "[writePLC] DB Write UID error\n";
     }
 }
 
 NFC::~NFC()
 {
-    Blue->write(0.2);
+    Blue->write(0);
+    Blue->enable(false);
     Red->write(0);
+    Red->enable(false);
     Green->write(0);
+    Green->enable(false);
+    Buzzer->write(0);
+    Relay->write(0);
     if(useSnap7) Snap7Client->Disconnect();
     delete Snap7Client;
     delete reader;

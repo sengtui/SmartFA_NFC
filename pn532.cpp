@@ -21,6 +21,7 @@ void printHEX(const char* topic, unsigned char* str, int len)
 
 // Constructor
 PN532::PN532(){
+    
     bzero(rxStr,256);
     bzero(txStr,256);
 }
@@ -37,6 +38,10 @@ bool PN532::connect(const char* ttyS){
 
 // Destructor
 PN532::~PN532(){
+ 
+    char ACK[] = { 0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00 };
+    dev->write(ACK,6);
+    usleep(5000);
     delete dev;
 }
 
@@ -64,7 +69,7 @@ bool PN532::wakeUp()
 
 // Setup RF parameters
 // D4 32 05 02 01 40(RF_Retry)
-// RF_Retry: 0xFF infinite, 0x00 No retry. Suggest > 0x20
+// RF_Retry: 0xFF infinite, 0x00 No retry. Suggest > 0xFF, which means continueous retry until timeout
 bool PN532::RFConfiguration(int isLog)
 {
     int ret;
@@ -141,6 +146,10 @@ bool PN532::ListPassiveTarget(int isLog)
     if(isLog & ON_DEBUG) cout<<"ListPassiveTarget..."<<endl;
     ret = Query(cmd, 4, isLog);
     NbTg = rxStr[7];
+    if(!ret){
+        if(isLog & ON_DEBUG) cout << "[ListPassiveTarget] Fail.\n";
+        return false;
+    }
     if((NbTg == 0) || (ret==0)) {
         if(isLog & ON_DEBUG) cout<<"No card listed"<<endl;
         for(int i=0;i<12;i++) UID[i]=0;
@@ -208,10 +217,10 @@ int PN532::rawCommand(int txLen, int isLog)
     int ret, remain;
     char LEN, LCS; 
     int CMD;
-    
     char NACK[] = { 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00 };
     char ACK[] = { 0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00 };
- 
+   
+    
     try{
     // Send Command
         if(isLog & ON_DEBUG) printHEX("TX", txStr, txLen);
