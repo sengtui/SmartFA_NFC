@@ -14,6 +14,8 @@ void printHEX(const char* topic, char* str, int len)
   for(int i = 0; i< len; i++) fprintf(stderr, "%02X ", (unsigned char)str[i]);
   fprintf(stderr, "\n");
 }
+
+// Wrapper for unsigned char* str
 void printHEX(const char* topic, unsigned char* str, int len)
 {
     printHEX(topic, (char*)str, len);
@@ -26,6 +28,9 @@ PN532::PN532(){
     bzero(txStr,256);
 }
 
+// Set PN532 communication, we are using uart (not I2C or SPI), default baud rate is 115200, N,  8, 1, no flow control
+// On libmraa library GIT it says that the timeout is not implemented, setting timeout may cause unknown problem.
+// Instead of system timeout from MRAA, we will use Uart->dataAvailable(timeout) to check if the message arrive at the uart within timeout
 bool PN532::connect(const char* ttyS){
 
     dev = new mraa::Uart(ttyS);
@@ -48,6 +53,7 @@ PN532::~PN532(){
 // Wake up sequence: 0x55 0x55 + lot of 0x00 until it awake.
 // Then send 0x00 0x00 0xff 0x03 0xfd to notify 3 bytes command:
 // 0xD4 0x14 0x01  (SamConfigue: Normal mode, timeout=50ms)
+// Expected reply:
 bool PN532::wakeUp()
 {
     int ret;
@@ -62,14 +68,17 @@ bool PN532::wakeUp()
 
     dev->write(WAKEUP, 24);
     usleep(200000);
-    dev->read(rxStr,15);
+    ret = dev->read(rxStr,15);
 
-    return ret;
+     if(isLog & ON_DEBUG) cout<<"Send wake up command, get "<<ret<<" chars reply..." <<endl;
+   
+    return ret>7?true:false;
 }
 
 // Setup RF parameters
 // D4 32 05 02 01 40(RF_Retry)
 // RF_Retry: 0xFF infinite, 0x00 No retry. Suggest > 0xFF, which means continueous retry until timeout
+// Expected reply:
 bool PN532::RFConfiguration(int isLog)
 {
     int ret;
@@ -77,11 +86,12 @@ bool PN532::RFConfiguration(int isLog)
 
     if(isLog & ON_EVENT) cout<<"Configure RF parameters..." <<endl;
     ret = Query(RFCFG, 6, isLog);
-    return true;
+    return ret>5?true:false;
 }
 
 // GerFirmwareVersion: D4 02 
 // Output: D4 03 XX YY ZZ
+// Expected reply:
 bool PN532::GetFirmwareVersion(int isLog)
 {
     int ret;
@@ -97,11 +107,12 @@ bool PN532::GetFirmwareVersion(int isLog)
     if(info_Support|1) cout << "Supported: ISO/IEC 14443 TypeA\n";
     if(info_Support|2) cout << "Supported: ISO/IEC 14443 TypeB\n";
     if(info_Support|4) cout << "Supported: ISO18092\n";
-    return true;
+    return ret>4?true:false;
 }
 
 // GerGeneralStatus: D4 04
 // Outp0ut: D4 05 XX YY ZZ
+// Expected reply:
 bool PN532::GetGeneralStatus(int isLog)
 {
     int ret;
@@ -111,12 +122,13 @@ bool PN532::GetGeneralStatus(int isLog)
     ret = Query(cmd, 2, true);
     printHEX("Status", Reply, ret);
  
-    return true;
+    return ret>4?true:false;
 }
 
 
 // Auth: D4 40 01 AUTH(0x60) 07 KEY[6] UID[4]
 // Usually factory default key is 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF
+// Expected reply:
 bool PN532::auth(int isLog)
 {
     int ret;
@@ -134,6 +146,7 @@ bool PN532::auth(int isLog)
 
 // ListPassiveTarget: D4 4A NumCards(02) 106k_Mifare(00)
 // Outpout: D4 4B xxxxxx
+// Expected reply:
 bool PN532::ListPassiveTarget(int isLog)
 {
     int ret;
@@ -173,7 +186,7 @@ bool PN532::ListPassiveTarget(int isLog)
    LCS = ~LEN+1  (LCS+LEN = 0x100)
    CHK = ~SUM(CMD, VAR1, ... VARn)+1
    Total lenght transmit = cmdLen + 7
-
+   Expected reply:
 */
 int PN532::Query(char* cmd, int cmdLen, int isLog)
 {

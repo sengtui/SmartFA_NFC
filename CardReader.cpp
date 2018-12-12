@@ -93,12 +93,16 @@ int main(int argc, char** argv)
     // If there is no IP Address, do not connect to PLC
     cout << "No IP Address set, disable communication with PLC\n";
     if(my7688->Address==NULL) my7688->useSnap7=false;
+    
+    // Debug other parts when  there is no NFC module installed.
+    my7688->noNFC=true;
+    
     my7688->initialize();
     signal(SIGTERM, signalHandler);
     signal(SIGINT, signalHandler);
     counts=0;
     do{
-        if(counts%10) my7688->scanCard();
+        if(counts%10&& !my7688->noNFC) my7688->scanCard();
         my7688->beep(0);
         usleep(20000);
         counts++;

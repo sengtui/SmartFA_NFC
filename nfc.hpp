@@ -27,6 +27,7 @@ class NFC {
     int logLevel;
 
     bool useSnap7;
+    bool noNFC;
     int Rack, Slot, DB, Offset, ok, k0, watchdog;
     char* Address; // PLC IP Address
     bool isValidCard;

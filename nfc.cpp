@@ -25,6 +25,8 @@ NFC::NFC()
     breatheDir=0.01;
     breatheOut=0;
     useSnap7=true;
+
+
     isValidCard=false;
     isNewCard=false;
     isCard=false;
@@ -133,13 +135,16 @@ void NFC::initialize(void)
     bzero(id_table,80);
     if(useSnap7) Snap7Client->DBRead(DB, Offset+4, 80, (void*)id_table);
 
-    reader->wakeUp();
-    reader->RFConfiguration(logLevel);
-    reader->GetFirmwareVersion(logLevel);
-    reader->GetGeneralStatus(logLevel);
-    usleep(100000);
-    Buzzer->write(0);
-    Blue->write(0);
+    if(!noNFC){
+        reader->wakeUp();
+        reader->RFConfiguration(logLevel);
+        reader->GetFirmwareVersion(logLevel);
+        reader->GetGeneralStatus(logLevel);
+    }
+        usleep(100000);
+        Buzzer->write(0);
+        Blue->write(0);
+    
  
 }
 
@@ -174,6 +179,7 @@ bool NFC::scanCard(void)
 {
     bool ret;
 
+    if(noNFC) return false;
     ret=reader->ListPassiveTarget(logLevel);
     if(ret){
         failCounts=0;

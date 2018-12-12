@@ -6,3 +6,4 @@ mipsel-openwrt-linux/CardReader.o
 i386-amd64-linux/s7simulator
 i386-amd64-linux/server.o
 i386-amd64-linux/snap7.o
+.vscode/launch.json
