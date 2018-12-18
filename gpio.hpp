@@ -13,7 +13,8 @@
 #define GPIO_DQ0    18
 #define GPIO_BUZZER 17
 #define GPIO_RELAY  16
-#define GPIO_LED1   15
+#define GPIO_DIP2  15
+#define GPIO_DIP1   14
 
 #define GPIO_BLUE   21 
 #define GPIO_GREEN   20

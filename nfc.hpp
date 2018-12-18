@@ -15,7 +15,7 @@ class NFC {
     TS7Client* Snap7Client;
     mraa::Gpio *Buzzer, *Relay;
     mraa::Pwm *Blue, *Red, *Green;
-
+    mraa::Gpio *DIP1, *DIP2;
 
     NFC();
     ~NFC();

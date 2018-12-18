@@ -12,6 +12,9 @@ NFC::NFC()
     Red = new mraa::Pwm(GPIO_RED);
     Buzzer = new mraa::Gpio(GPIO_BUZZER);
     Relay = new mraa::Gpio(GPIO_RELAY);
+    DIP1 = new mraa::Gpio(GPIO_DIP1);
+    DIP2 = new mraa::Gpio(GPIO_DIP2);
+
     uid=reader->UID;
     Rack=0;
     Slot=1;
@@ -127,9 +130,11 @@ void NFC::initialize(void)
     //Init GPIO
     Buzzer->dir(mraa::DIR_OUT_LOW);
     Relay->dir(mraa::DIR_OUT_LOW);
+    DIP1->dir(mraa::DIR_IN);
+    DIP2->dir(mraa::DIR_IN);
     if(useBuzzer) Buzzer->write(1);
     Relay->write(0);
-    
+
 
     //Init ID table
     bzero(id_table,80);
@@ -178,6 +183,7 @@ bool NFC::checkCard(int numRecords)
 bool NFC::scanCard(void)
 {
     bool ret;
+    int dip1, dip2;
 
     if(!useNFC) return false;
     ret=reader->ListPassiveTarget(logLevel);
@@ -189,6 +195,9 @@ bool NFC::scanCard(void)
         if(!isCard){
             isCardEntering=true;
             if(logLevel && ON_EVENT) fprintf(stderr,"[ScanCard] First entering this card\n");
+            dip1=DIP1->read();
+            dip2=DIP2->read();
+            fprintf(stderr, "DIP1:%d, DIP2:%d \n", dip1, dip2);
         }
         else isCardEntering=false;
         // No matter what, there is a Card.
@@ -201,6 +210,12 @@ bool NFC::scanCard(void)
         if(!isValidCard && isCardEntering&&useSnap7){
             if(logLevel & ON_EVENT) cout << "[Snap7Client] Card ID not found in DB, download DB again...\n";
             if(useSnap7) Snap7Client->DBRead(DB, Offset+4, 80, (void*)id_table);
+        //DIP1==ON --> Write this card at position 4(DIP2=OFF), 8(DIP=ON) 
+            if(dip1==1){
+                if(logLevel & ON_EVENT) cout << "[Snap7Client] DIP1 is ON, update this card to DB....\n";
+                if(dip2==0) Snap7Client->DBWrite(DB, Offset+4, 4, (void*)uid );
+                if(dip2==1) Snap7Client->DBWrite(DB, Offset+8, 4, (void*)uid);
+            }
         }
         if(isValidCard&&useSnap7){
             watchdog++;
