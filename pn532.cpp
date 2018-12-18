@@ -54,7 +54,7 @@ PN532::~PN532(){
 // Then send 0x00 0x00 0xff 0x03 0xfd to notify 3 bytes command:
 // 0xD4 0x14 0x01  (SamConfigue: Normal mode, timeout=50ms)
 // Expected reply:
-bool PN532::wakeUp()
+bool PN532::wakeUp(int isLog)
 {
     int ret;
     
@@ -243,7 +243,7 @@ int PN532::rawCommand(int txLen, int isLog)
     // Wait for data from serial line, timeout 15ms
         if(!dev->dataAvailable(15)){
             if(isLog & ON_ERROR) cout<<"[ACK] Reply timeout 1" << endl;
-            wakeUp();
+            wakeUp(isLog);
             return false;
         }
         ret = dev->read(rxStr,6);   // Read ACK 6 chars 

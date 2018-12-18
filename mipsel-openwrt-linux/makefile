@@ -6,7 +6,8 @@
 ## Intend this makefile only as a "batch examples updater" after library modification.
 ##
 
-IP	:= 192.168.101.126
+IP	:= 192.168.100.1
+
 SHELL	:= /bin/bash
 Libs     := -ldl -lrt -lpthread -lsnap7 -lmraa
 CXX      := mipsel-openwrt-linux-g++

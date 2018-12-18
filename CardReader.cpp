@@ -6,6 +6,9 @@
 using namespace std;
 
 NFC* my7688;
+static int optHasPLC=1;
+static int  optHasNFC=1;
+static int optQuiet=0;
 
 void signalHandler(int signum){
     cout << "\nSignal received, preparing to stop\n";
@@ -16,7 +19,6 @@ void signalHandler(int signum){
     exit(signum);
 }
 
-static int opt_plc = 1;
 static struct option long_options[]=
 {
     {"ip", required_argument, 0, 'i'},
@@ -26,7 +28,9 @@ static struct option long_options[]=
     {"slot", required_argument, 0, 's'},
     {"debug", required_argument, 0, 'g'},
     {"help", no_argument, 0, 'h'},
-    {"noplc", no_argument, 0, 'n'},
+    {"noplc", no_argument, &optHasPLC, 0},
+    {"nonfc", no_argument, &optHasNFC, 0},
+    {"quite", no_argument, &optQuiet,1 },
     {0,0,0,0}
 };
 
@@ -43,7 +47,8 @@ int main(int argc, char** argv)
     while(1){
         c = getopt_long(argc, argv, "i:d:o:r:s:g:h", long_options, &option_index);
         if(c==-1) break;
-        
+        // For parameters flags setting directly, ex: noplc, nonfc, quite, c==0
+        if(c==0) break;
         switch(c){
             case 'i':
                 my7688->Address=optarg;
@@ -64,9 +69,7 @@ int main(int argc, char** argv)
                 my7688->logLevel=atoi(optarg);
         fprintf(stderr,"Loglevel:%d\n", my7688->logLevel);
                 break;
-            case 'n':
-                my7688->useSnap7=false;
-                break;
+          
 
             case 'h':
                 cout << endl << "Usage: CardReader -i IP_address -d DB_number -o Offset ";
@@ -78,7 +81,9 @@ int main(int argc, char** argv)
                 cout << "   -r, --rack <number>       Set Rack number of PLC, default 0 if not set\n";
                 cout << "   -s, --slot <number>       Set Slot numberof PLC, default 1 if not set\n";
                 cout << "   -g, --debug <number>      Set Debug Level 7: DEBUG, 3: EVENT, 1: ERROR, default:1\n";
-                cout << "   -n, --noplc               Disable communication with PLC\n";
+                cout << "   --noplc               Disable communication with PLC\n";
+                cout << "   --nonfc               Disable NFC function\n";
+                cout << "   --quiet                Disable Buzzer\n";
                 cout << "   -h, --help                Show this message\n\n";
                 cout << "Running CardReader without parameters will disable connection to PLC";
                 cout << ", same as --noplc\n";
@@ -86,23 +91,31 @@ int main(int argc, char** argv)
                 break;
 
             default:
+                cout << "Default: " << c <<"\n";
                 abort();
 
         }
     }
     // If there is no IP Address, do not connect to PLC
-    cout << "No IP Address set, disable communication with PLC\n";
-    if(my7688->Address==NULL) my7688->useSnap7=false;
+    if(my7688->Address==NULL) optHasPLC=false;
     
     // Debug other parts when  there is no NFC module installed.
-    my7688->noNFC=true;
+
+    if(optHasNFC) cout << "Run with NFC module\n";
+    my7688->useNFC=(bool)optHasNFC;
+    
+    if(optHasPLC) cout << "Run with PLC Communication\n";
+    my7688->useSnap7=(bool)optHasPLC;
+    
+    if(optQuiet) cout << "Run with noisy Buzzer\n";
+    my7688->useBuzzer = optQuiet==0?true:false;
     
     my7688->initialize();
     signal(SIGTERM, signalHandler);
     signal(SIGINT, signalHandler);
     counts=0;
     do{
-        if(counts%10&& !my7688->noNFC) my7688->scanCard();
+        if(counts%10&& my7688->useNFC) my7688->scanCard();
         my7688->beep(0);
         usleep(20000);
         counts++;

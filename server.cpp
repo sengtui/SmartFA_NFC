@@ -37,8 +37,8 @@
 #include "snap7.h"
 
      TS7Server *Server;
-     unsigned char DB21[512];  // Our DB1
-     unsigned char DB103[1280];  // Our DB2
+     unsigned char DB0[512];  // Our DB0
+     unsigned char DB2[1280];  // Our DB2
      unsigned char DB3[1024]; // Our DB3
 	 byte cnt = 0;
 
@@ -50,22 +50,22 @@
 void S7API EventCallBack(void *usrPtr, PSrvEvent PEvent, int Size)
 {
     // print the event
-    printf("%s\n",SrvEventText(PEvent).c_str());
+    printf("Event CallBack: %s\n",SrvEventText(PEvent).c_str());
 };
 
 // The read event callback is called multiple times in presence of multiread var request
 void S7API ReadEventCallBack(void *usrPtr, PSrvEvent PEvent, int Size)
 {
     // print the read event
-    printf("%s\n",SrvEventText(PEvent).c_str());
+    printf("Read Event CallBack: %s\n",SrvEventText(PEvent).c_str());
 	if (PEvent->EvtParam1==S7AreaDB)
 	{
                 // As example the DB requested is filled before transferred
                 // EvtParam1 contains the DB number.
 		switch (PEvent->EvtParam2)
 		{
-		case 1 : memset(&DB21, ++cnt, sizeof(DB21));break;
-		case 2 : memset(&DB103, ++cnt, sizeof(DB103));break;
+		case 1 : memset(&DB0, ++cnt, sizeof(DB0));break;
+		case 2 : memset(&DB2, ++cnt, sizeof(DB2));break;
 		case 3 : memset(&DB3, ++cnt, sizeof(DB3));break;
 		}
 	}
@@ -78,15 +78,15 @@ int main(int argc, char* argv[])
 
     // Share some resources with our virtual PLC
     Server->RegisterArea(srvAreaDB,     // We are registering a DB
-                         21,             // Its number is 1 (DB1)
-                         &DB21,          // Our buffer for DB1
-                         sizeof(DB21));  // Its size
+                         0,             // Its number is 1 (DB1)
+                         &DB0,          // Our buffer for DB1
+                         sizeof(DB0));  // Its size
     // Do the same for DB2 and DB3
-    Server->RegisterArea(srvAreaDB, 103, &DB103, sizeof(DB103));
+    Server->RegisterArea(srvAreaDB, 2, &DB2, sizeof(DB2));
     Server->RegisterArea(srvAreaDB, 3, &DB3, sizeof(DB3));
 
     // We mask the read event to avoid the double trigger for the same event                  
-    Server->SetEventsMask(~evcDataRead);
+   // Server->SetEventsMask(~evcDataRead);
     Server->SetEventsCallback(EventCallBack, NULL);
     // Set the Read Callback
     Server->SetReadEventsCallback(ReadEventCallBack, NULL);

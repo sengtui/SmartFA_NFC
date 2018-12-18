@@ -25,7 +25,7 @@ class PN532 {
       char UID[12];
       PN532();
       bool connect(const char* ttyS);
-      bool wakeUp();
+      bool wakeUp(int isLog);
       bool auth(int isLog);
       bool RFConfiguration(int isLog);
       bool GetFirmwareVersion(int isLog);
