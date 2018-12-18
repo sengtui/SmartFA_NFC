@@ -208,14 +208,16 @@ bool NFC::scanCard(void)
         isValidCard = checkCard(20);
         // If it's the first time checking this card and find no record, try to sync with PLC again
         if(!isValidCard && isCardEntering&&useSnap7){
-            if(logLevel & ON_EVENT) cout << "[Snap7Client] Card ID not found in DB, download DB again...\n";
-            if(useSnap7) Snap7Client->DBRead(DB, Offset+4, 80, (void*)id_table);
+            if(logLevel & ON_EVENT) cout << "[Snap7Client] Card ID not found in DB\n";
         //DIP1==ON --> Write this card at position 4(DIP2=OFF), 8(DIP=ON) 
             if(dip1==1){
                 if(logLevel & ON_EVENT) cout << "[Snap7Client] DIP1 is ON, update this card to DB....\n";
                 if(dip2==0) Snap7Client->DBWrite(DB, Offset+4, 4, (void*)uid );
                 if(dip2==1) Snap7Client->DBWrite(DB, Offset+8, 4, (void*)uid);
             }
+            if(logLevel & ON_EVENT) cout << "[Snap7Client] Download DB again...\n";
+            if(useSnap7) Snap7Client->DBRead(DB, Offset+4, 80, (void*)id_table);
+      
         }
         if(isValidCard&&useSnap7){
             watchdog++;
@@ -244,6 +246,14 @@ bool NFC::writePLC()
         if(logLevel & ON_DEBUG) cout << "[writePLC] update DB...\n";
         if(Snap7Client->DBWrite(DB, Offset, 4, (void*)uid)==0) watchdog=0;
         else cout << "[writePLC] DB Write UID error\n";
+    }
+    // Watchdog timeout, usually because Connection failed, rebuild connection.....
+    if(watchdog>2){
+        if(logLevel & ON_ERROR) cout << "[Snap7Client] WatchDog timeout, reconnecting....\n";
+        Snap7Client->Disconnect();
+        usleep(100000);
+        Snap7Client->Connect();
+
     }
 }
 
